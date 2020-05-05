@@ -1,5 +1,5 @@
 #
-# GitLab CI: AndRust v0.8
+# GitLab CI image: registry.gitlab.com/privatetracer/build-images:latest
 # 
 # Android SDK, NDK and rust - on top of openjdk:8-jdk (Debian)
 #
@@ -19,7 +19,6 @@ RUN set -eux; \
 		libc6-dev \
 		wget \
 		curl \
-		locales \
 		unzip; \
 	rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* 
 
@@ -29,11 +28,9 @@ WORKDIR /opt
 ENV ANDROID_HOME /opt/android-sdk-linux
 ENV PATH ${PATH}:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:${PATH}:${ANDROID_HOME}/tools
 ENV ANDROID_NDK /opt/android-ndk-linux
-ENV ANDROID_NDK_HOME /opt/android-ndk-linux
+ENV ANDROID_NDK_HOME ${ANDROID_NDK}
+ENV PATH ${PATH}:${ANDROID_NDK}/toolchains/llvm/prebuilt/linux-x86_64/bin/
 # ENV SDKMANAGER_OPTS "--add-modules java.se.ee"
-
-RUN locale-gen en_US.UTF-8
-ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 # download sdk tools - you might want to update the file from time to time
 RUN set -eux; \
@@ -41,7 +38,7 @@ RUN set -eux; \
 	unzip sdk-tools.zip -d "${ANDROID_HOME}"; \
 	rm -f sdk-tools.zip
 
-# NOTE: --sdk-root is a workaround for a bug in the sdk manager
+# NOTE --sdk_root=${ANDROID_HOME} is a workaround for a bug in the sdk manager
 
 # accept licenses before installing components
 RUN yes | sdkmanager --sdk_root=${ANDROID_HOME} --licenses
@@ -71,7 +68,7 @@ RUN set -eux; \
 	rustup target add x86_64-apple-ios; \
 	rustup target add aarch64-apple-ios; \
 	# android arches
-	rustup target add arm-linux-androideabi; \
-	rustup target add aarch64-linux-android; \
+	rustup target add i686-linux-android; \
 	rustup target add x86_64-linux-android; \
-	rustup target add i686-linux-android
+	rustup target add aarch64-linux-android; \
+	rustup target add armv7-linux-androideabi
